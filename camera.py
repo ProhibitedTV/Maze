@@ -1,25 +1,34 @@
+import numpy as np
+
 class Camera:
     def __init__(self):
-        # Initialize camera position and look at vector
-        self.position = [0, 0, -5]  # Example initial position
-        self.look_at = [0, 0, 0]  # Example point the camera is looking at
+        self.position = [0, 0, 0]
+        self.look_at = [0, 0, -1]
+        self.up = [0, 1, 0]
+        self.fov = 45
+        self.aspect_ratio = 800 / 600
+        self.near_plane = 0.1
+        self.far_plane = 50.0
 
-    def move_forward(self, distance=0.1):
-        # Example movement function
-        # This is a simplified example; adjust movement based on camera orientation for a real application
-        self.position[2] += distance
+    def get_projection_matrix(self):
+        # Manually create a perspective projection matrix
+        f = 1.0 / np.tan(np.radians(self.fov) / 2.0)
+        aspect_ratio = self.aspect_ratio
+        z_near, z_far = self.near_plane, self.far_plane
+        return np.array([
+            [f / aspect_ratio, 0.0, 0.0, 0.0],
+            [0.0, f, 0.0, 0.0],
+            [0.0, 0.0, (z_far + z_near) / (z_near - z_far), (2.0 * z_far * z_near) / (z_near - z_far)],
+            [0.0, 0.0, -1.0, 0.0]
+        ], dtype=np.float32)
 
-    def move_backward(self, distance=0.1):
-        # Example movement function
-        self.position[2] -= distance
+    def get_view_matrix(self):
+        # Create a view matrix based on the camera's position, look_at point, and up vector
+        return gluLookAt(
+            self.position[0], self.position[1], self.position[2],
+            self.look_at[0], self.look_at[1], self.look_at[2],
+            self.up[0], self.up[1], self.up[2]
+        )
 
-    def rotate_left(self, angle=5):
-        # Example rotation function
-        # For simplicity, this example doesn't actually change the look_at vector
-        pass
-
-    def rotate_right(self, angle=5):
-        # Example rotation function
-        pass
-
-    # Add more methods as needed for camera controls
+    def get_view_matrix_without_translation(self):
+        return np.identity(4, dtype=np.float32)
